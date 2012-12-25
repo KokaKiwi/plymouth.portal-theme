@@ -1,0 +1,151 @@
+/*
+**  Plymouth Portal theme.
+*/
+
+
+/*
+** Window functions.
+*/
+
+Window.GetMaxWidth = fun()
+{
+    i = 0;
+    width = 0;
+    while (Window.GetWidth(i))
+    {
+        width = Math.Max(width, Window.GetWidth(i));
+        i++;
+    }
+    return width;
+};
+
+Window.GetMaxHeight = fun()
+{
+    i = 0;
+    height = 0;
+    while (Window.GetHeight(i))
+    {
+        height = Math.Max(height, Window.GetHeight(i));
+        i++;
+    }
+    return height;
+};
+
+Window.SetBackgroundColor = fun(red, green, blue)
+{
+    Window.SetBackgroundTopColor(red, green, blue);
+    Window.SetBackgroundBottomColor(red, green, blue);
+};
+
+Window.SetBackgroundColor(0.00, 0.00, 0.00);
+
+/*
+** Draw functions
+*/
+
+fun draw_image(sprite, img, pos, size)
+{
+    scaledImage = img.Scale(size.width, size.height);
+    sprite.SetImage(scaledImage);
+    sprite.SetPosition(pos.x, pos.y, pos.z);
+}
+
+fun draw_text(sprite, string, pos, color)
+{
+    img = Image.Text(string, color.red, color.green, color.blue);
+    sprite.SetImage(img);
+    sprite.SetPosition(pos.x, pos.y, pos.z);
+}
+
+/*
+** Array functions.
+*/
+
+Array.Size = fun(array)
+{
+    size = 0;
+    while (array[size])
+        size++;
+    return size;
+};
+
+/*
+** Util values.
+*/
+
+color_white.red = 1;
+color_white.green = 1;
+color_white.blue = 1;
+
+/*
+** Main script.
+*/
+
+// Load background
+
+background.files = [
+    [
+        "portal_loading_a_1.png",
+        "portal_loading_a_2.png",
+        "portal_loading_a_3.png",
+        "portal_loading_a_4.png"
+    ]
+];
+
+i = 0;
+while (background.files[i])
+{
+    j = 0;
+    while (background.files[i][j])
+    {
+        file = background.files[i][j];
+        background.images[i][j] = Image(file);
+        j++;
+    }
+    i++;
+}
+
+text.sprite = Sprite();
+
+text.pos.x = 10;
+text.pos.y = 10;
+text.pos.z = 10000;
+
+text.color = color_white;
+
+fun draw_simple_text(string)
+{
+    draw_text(text.sprite, string, text.pos, text.color);
+}
+
+background.sprite = Sprite();
+
+background.pos.x = 0;
+background.pos.y = 0;
+background.pos.z = 100;
+
+background.size.width = Window.GetMaxWidth();
+background.size.height = Window.GetMaxHeight();
+
+fun draw_background(img)
+{
+    draw_image(background.sprite, img, background.pos, background.size);
+}
+
+/*
+** Progress callback.
+*/
+
+fun progress(time, progress)
+{
+    progress = progress * 6;
+    if (progress > 1)
+        progress = 1;
+    size = Array.Size(background.images[0]);
+    index = Math.Int(progress * size);
+    img = background.images[0][index];
+    draw_background(img);
+    draw_simple_text("Progress: " + Math.Int(progress * 100) + "%");
+}
+
+Plymouth.SetBootProgressFunction(progress);

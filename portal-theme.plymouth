@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=portal-theme
+Description=A Plymouth Portal theme.
+ModuleName=script
+
+[script]
+ImageDir=/lib/plymouth/themes/portal-theme
+ScriptFile=/lib/plymouth/themes/portal-theme/portal.script
