@@ -98,6 +98,8 @@ speed = 1.000;
 background.sprite = Sprite();
 background.sprite.SetPosition(0, 0, 10);
 
+background.index = -1;
+
 background.opacity = 1.0;
 
 background.pos.x = 0;
@@ -152,7 +154,11 @@ fun refresh()
             ease.enabled = 0;
 
             ease.sprite.SetImage(NULL);
-            background.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+            if (background.index != index)
+            {
+                background.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+                background.index = index;
+            }
 
             ease.sprite.SetOpacity(0.0);
             background.sprite.SetOpacity(1.0);
@@ -160,7 +166,11 @@ fun refresh()
     }
     else
     {
-        background.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+        if (background.index != index)
+        {
+            background.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+            background.index = index;
+        }
     }
 }
 
