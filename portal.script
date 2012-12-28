@@ -40,24 +40,6 @@ Window.SetBackgroundColor = fun(red, green, blue)
 Window.SetBackgroundColor(0.00, 0.00, 0.00);
 
 /*
-** Draw functions
-*/
-
-fun draw_image(sprite, img, pos, size)
-{
-    scaledImage = img.Scale(size.width, size.height);
-    sprite.SetImage(scaledImage);
-    sprite.SetPosition(pos.x, pos.y, pos.z);
-}
-
-fun draw_text(sprite, string, pos, color)
-{
-    img = Image.Text(string, color.red, color.green, color.blue);
-    sprite.SetImage(img);
-    sprite.SetPosition(pos.x, pos.y, pos.z);
-}
-
-/*
 ** Array functions.
 */
 
@@ -89,36 +71,34 @@ background.files = [
         "portal_loading_a_2.png",
         "portal_loading_a_3.png",
         "portal_loading_a_4.png"
+    ],
+    [
+        "portal_loading_b_1.png",
+        "portal_loading_b_2.png",
+        "portal_loading_b_3.png",
+        "portal_loading_b_4.png"
     ]
 ];
 
+// Uncomment for random background at boot.
+// background.bgIndex = Math.Int(Math.Random() * Array.Size(background.files));
+background.bgIndex = 1;
+
 i = 0;
-while (background.files[i])
+while (background.files[background.bgIndex][i])
 {
-    j = 0;
-    while (background.files[i][j])
-    {
-        file = background.files[i][j];
-        background.images[i][j] = Image(file);
-        j++;
-    }
+    file = background.files[background.bgIndex][i];
+    img = Image(file);
+    background.images[i] = img;
     i++;
 }
 
-text.sprite = Sprite();
-
-text.pos.x = 10;
-text.pos.y = 10;
-text.pos.z = 10000;
-
-text.color = color_white;
-
-fun draw_simple_text(string)
-{
-    draw_text(text.sprite, string, text.pos, text.color);
-}
+speed = 1.000;
 
 background.sprite = Sprite();
+background.sprite.SetPosition(0, 0, 10);
+
+background.opacity = 1.0;
 
 background.pos.x = 0;
 background.pos.y = 0;
@@ -127,10 +107,64 @@ background.pos.z = 100;
 background.size.width = Window.GetMaxWidth();
 background.size.height = Window.GetMaxHeight();
 
-fun draw_background(img)
+progress = 0.0;
+time = 0.0;
+
+/*
+** Refresh callback.
+*/
+
+ease.enabled = 0;
+ease.opacity = 0.0;
+ease.start = 0;
+ease.index = -1;
+
+ease.sprite = Sprite();
+ease.sprite.SetPosition(0, 0, 100);
+
+fun refresh()
 {
-    draw_image(background.sprite, img, background.pos, background.size);
+    index = Math.Int(progress * Array.Size(background.images));
+    if (index >= Array.Size(background.images))
+        index = Array.Size(background.images) - 1;
+
+    if (index != ease.index)
+    {
+        ease.enabled = 1;
+        ease.index = index;
+        ease.start = time;
+        ease.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+    }
+
+    if (ease.enabled)
+    {
+        diff = time - ease.start;
+        if (diff < speed)
+        {
+            ease.opacity = diff / speed;
+            background.opacity = 1.0 - ease.opacity;
+
+            ease.sprite.SetOpacity(ease.opacity);
+            background.sprite.SetOpacity(background.opacity);
+        }
+        else
+        {
+            ease.enabled = 0;
+
+            ease.sprite.SetImage(NULL);
+            background.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+
+            ease.sprite.SetOpacity(0.0);
+            background.sprite.SetOpacity(1.0);
+        }
+    }
+    else
+    {
+        background.sprite.SetImage(background.images[index].Scale(Window.GetMaxWidth(), Window.GetMaxHeight()));
+    }
 }
+
+Plymouth.SetRefreshFunction(refresh);
 
 /*
 ** Progress callback.
@@ -138,14 +172,10 @@ fun draw_background(img)
 
 fun progress(time, progress)
 {
-    progress = progress * 6;
-    if (progress > 1)
-        progress = 1;
-    size = Array.Size(background.images[0]);
-    index = Math.Int(progress * size);
-    img = background.images[0][index];
-    draw_background(img);
-    draw_simple_text("Progress: " + Math.Int(progress * 100) + "%");
+    global.progress = progress * 10;
+    if (global.progress > 1)
+        global.progress = 1;
+    global.time = time;
 }
 
 Plymouth.SetBootProgressFunction(progress);
